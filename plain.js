@@ -29,7 +29,7 @@ new Plain;
  * basic caller
  */
 ;function Plain(){
-this.version='1.0.0';
+this.version='1.0.1';
 this.init=function(){
 
 if(typeof _GLOBAL==='undefined'
@@ -77,7 +77,8 @@ _GLOBAL.tags=(new PlainHelper).tags(_GLOBAL.posts);
  */
 _BLOG.route.add(
   /* path */
-  '',
+  _BLOG.config.theme.hasOwnProperty('index')
+    ?_BLOG.config.theme.index:'',
   /* title */
   'Home',
   /* content */
