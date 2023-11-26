@@ -77,8 +77,7 @@ _GLOBAL.tags=(new PlainHelper).tags(_GLOBAL.posts);
  */
 _BLOG.route.add(
   /* path */
-  _BLOG.config.theme.hasOwnProperty('index')
-    ?_BLOG.config.theme.index:'',
+  '',
   /* title */
   'Home',
   /* content */
