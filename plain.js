@@ -29,7 +29,7 @@ new Plain;
  * basic caller
  */
 ;function Plain(){
-this.version='1.0.1';
+this.version='1.1.0';
 this.init=function(){
 
 if(typeof _GLOBAL==='undefined'
@@ -101,7 +101,7 @@ return this.init();
  * object _ENV
  */
 ;function PlainTheme(){
-  this.version='1.0.0';
+  this.version='1.1.0';
   return {
     detail:function(){
       if(_GET.hasOwnProperty('tag')){
@@ -372,9 +372,12 @@ return this.init();
  * requires: _GLOBAL and _BLOG object
  */
 ;function PlainHelper(){
-this.version='1.0.0';
+this.version='1.1.0';
 window._PlainHelper=this;
 this.assetsList=function(assets){
+  if(Object.keys(assets).length<1){
+    return '';
+  }
   let res='<div class="assets">'
     +'<div class="assets-title">Assets</div>';
   for(let name in assets){
@@ -565,9 +568,10 @@ this.contentLink=function(content,assets){
         +'</div>';
     }else if(m[1]=='text'){
       let furl=asset.relfo?asset.relfo:url,
-      turl=_BLOG.config.theme.host,
-      xurl=turl+'/plain/templates/reader.html'
-        +'?url='+encodeURIComponent(furl)
+      turl=_BLOG.config.theme.hasOwnProperty('reader')
+        ?_BLOG.config.theme.reader
+        :'https://relfo.vercel.app/9r3i/plain.js/reader/',
+      xurl=turl+'?url='+encodeURIComponent(furl)
         +'&title='+encodeURIComponent(asset.name),
       height=m[3]?m[3].substr(1):'400px';
       return '<a href="'+url+'" target="_blank">'
