@@ -29,8 +29,8 @@ new Plain;
  * basic caller
  */
 ;function Plain(){
-this.version='1.1.0';
-this.init=function(){
+this.version='1.2.0';
+this.init=async function(){
 
 if(typeof _GLOBAL==='undefined'
   ||typeof _BLOG==='undefined'
@@ -41,7 +41,10 @@ if(typeof _GLOBAL==='undefined'
 /* set global site */
 _GLOBAL.site={
   name:document.querySelector('title').textContent,
-  description:document.querySelector('meta[name="description"]').content,
+  description:document
+    .querySelector('meta[name="description"]').content,
+  across:_BLOG.config.hasOwnProperty('across')
+    ?_BLOG.config.across:false,
 };
 
 /* prepare global posts -- release method */
@@ -101,7 +104,7 @@ return this.init();
  * object _ENV
  */
 ;function PlainTheme(){
-  this.version='1.1.0';
+  this.version='1.2.0';
   return {
     detail:function(){
       if(_GET.hasOwnProperty('tag')){
@@ -165,6 +168,7 @@ return this.init();
       }else if(_GET.hasOwnProperty('reload')){
         return '<progress></progress>';
       }else if(_GET.hasOwnProperty('test')){
+        _ENV.testing();
         return 'Testing...';
       }else if(_GET.hasOwnProperty('admin')){
         let token=_BLOG.virtual.get('token.reg');
@@ -347,20 +351,24 @@ return this.init();
     testing:function(){
       let parse=new parser,
       res=[];
-      _BLOG.db.request('posts',1)
-        .then(r=>{
-          res=[...res,...Object.values(r)];
-          _BLOG.db.request('posts',2)
-            .then(rr=>{
-              res=[...res,...Object.values(rr)];
-              let ros=[];
-              for(let i in res){
-                ros.push(res[i].name);
-              }
-              document.body.innerHTML='<pre>'
-                +parse.likeJSON(ros,5)+'</pre>';
-            });
-        });
+      _BLOG.gaino.fetch('/eva/api/eva.php',{
+      //fetch('/eva/api/eva.php',{
+        method:'PUT',
+        headers:{
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.eva+json',
+          //'Accept': 'text/plain',
+          'Authorization': 'Bearer kYu9IhbKoUn-9ig7gz',
+          'X-Eva-Api-Version': '2023-11-29',
+        },
+        body:{
+          test: 'testing aja',
+          tos: 'never ending story'
+        },
+      }).then(r=>{
+        document.body.innerHTML='<pre>'
+          +parse.likeJSON(_BLOG.gaino.parseJSON(r),5)+'</pre>';
+      }).catch(e=>alert(e));
       return '';
     },
   }
@@ -401,9 +409,9 @@ this.headers=function(token){
 };
 this.dataPosts=function(data){
 let posts={};
+_GLOBAL.mainPosts=_GLOBAL.hasOwnProperty('mainPosts')
+  ?_GLOBAL.mainPosts:{};
 for(let post of Object.values(data)){
-  _GLOBAL.mainPosts=_GLOBAL.hasOwnProperty('mainPosts')
-    ?_GLOBAL.mainPosts:{};
   let assets={};
   for(let asset of post.assets){
     assets[asset.name]={
@@ -439,6 +447,7 @@ for(let post of Object.values(data)){
   if(post.hasOwnProperty('tag_name')
     &&post.tag_name.match(/^\d+\.\d+\.\d+$/)
     &&post.tag_name==_BLOG.config.theme.mainTagName
+    &&!_GLOBAL.site.across
     ){
     _GLOBAL.mainPosts[post.tag_name]=posts[post.id];
     delete posts[post.id];
@@ -452,7 +461,7 @@ this.tags=function(posts){
   tagsHTML.classList.add('tags-content');
   for(let i in posts){
     if(typeof posts[i].content!=='string'){continue;}
-    let akur=posts[i].content.match(/#[a-z0-9_]+/ig);
+    let akur=posts[i].content.match(/#[a-z][a-z0-9_]+/ig);
     if(!akur){continue;}
     let postID=posts[i].id;
     for(let e=0;e<akur.length;e++){
@@ -506,7 +515,7 @@ this.tagClass=function(count){
 };
 this.contentFindTags=function(content){
   content=typeof content==='string'?content:'';
-  return content.replace(/#[a-z0-9_]+/ig,function(m){
+  return content.replace(/#[a-z][a-z0-9_]+/ig,function(m){
     return '<a href="?tag='+m.substr(1).toLowerCase()
       +'" title="'+m.toLowerCase()+'">'+m+'</a>';
   }).replace(/oleh:\s([^\r\n]+)/i,function(m){
